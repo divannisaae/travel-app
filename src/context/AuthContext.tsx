@@ -1,0 +1,89 @@
+import React, { createContext, useReducer, useCallback, useMemo, useContext, useEffect } from "react";
+import type { User } from "../types/user";
+import { validateForm } from "../utils/validation";
+
+interface AuthState {
+  user: User | null;
+  isLoggedIn: boolean;
+  loading: boolean;
+  error: string | null;
+}
+
+type AuthAction =
+  | { type: "LOGIN_SUCCESS"; payload: User }
+  | { type: "LOGOUT" }
+  | { type: "AUTH_START" }
+  | { type: "AUTH_ERROR"; payload: string };
+
+const initialAuthState: AuthState = {
+  user: null,
+  isLoggedIn: false,
+  loading: false,
+  error: null,
+};
+
+const AuthContext = createContext<any>(null);
+
+const authReducer = (state: AuthState, action: AuthAction): AuthState => {
+  switch (action.type) {
+    case "AUTH_START": return { ...state, loading: true, error: null };
+    case "LOGIN_SUCCESS": return { ...state, loading: false, isLoggedIn: true, user: action.payload };
+    case "LOGOUT": return initialAuthState;
+    case "AUTH_ERROR": return { ...state, loading: false, error: action.payload };
+    default: return state;
+  }
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [state, dispatch] = useReducer(authReducer, initialAuthState);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user_credentials");
+    if (stored) {
+      try {
+        const user: User = JSON.parse(stored);
+        dispatch({ type: "LOGIN_SUCCESS", payload: user });
+      } catch {
+        localStorage.removeItem("user_credentials");
+      }
+    }
+  }, []);
+
+  const login = useCallback(async (data: Record<string, string>) => {
+    dispatch({ type: "AUTH_START" });
+    const errors = validateForm(data, "login");
+    if (Object.keys(errors).length > 0) {
+      dispatch({ type: "AUTH_ERROR", payload: "Validasi gagal" });
+      return Promise.reject(errors);
+    }
+    await new Promise(r => setTimeout(r, 400));
+    const user: User = { id: Date.now().toString(), username: data.email.split("@")[0], email: data.email };
+    localStorage.setItem("user_credentials", JSON.stringify(user));
+    dispatch({ type: "LOGIN_SUCCESS", payload: user });
+  }, []);
+
+  const register = useCallback(async (data: Record<string, string>) => {
+    dispatch({ type: "AUTH_START" });
+    const errors = validateForm(data, "register");
+    if (Object.keys(errors).length > 0) {
+      dispatch({ type: "AUTH_ERROR", payload: "Validasi gagal" });
+      return Promise.reject(errors);
+    }
+    await new Promise(r => setTimeout(r, 400));
+    const user: User = { id: Date.now().toString(), username: data.username, email: data.email };
+    localStorage.setItem("user_credentials", JSON.stringify(user));
+    dispatch({ type: "LOGIN_SUCCESS", payload: user });
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("user_credentials");
+    dispatch({ type: "LOGOUT" });
+  }, []);
+
+  const value = useMemo(() => ({ state, login, register, logout }), [state, login, register, logout]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const useAuth = () => useContext(AuthContext);

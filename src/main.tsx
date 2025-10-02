@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import RootApp from "./component/RootApp";
-import "./index.css";
+import App from "./App";
+import "./index.css"; // Tailwind (opsional, kalau pakai)
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RootApp />
+    <App />
   </React.StrictMode>
 );

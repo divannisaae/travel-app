@@ -1,7 +1,10 @@
 export interface Article {
   id: number;
   title: string;
-  summary: string;
   author: string;
-  date: string;
+  date: string; // YYYY-MM-DD
+  category: "Mountain" | "Beach" | "City" | "Culture";
+  summary: string;
+  content: string;
+  views: number;
 }
