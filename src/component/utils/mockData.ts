@@ -3,7 +3,7 @@ export interface Article {
   title: string;
   author: string;
   date: string;
-  category: 'Mountain' | 'Beach' | 'City' | 'Culture';
+  category: "" | "Mountain" | "Beach" | "City" | "Culture";
   summary: string;
   content: string;
   views: number;

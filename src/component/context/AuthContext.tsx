@@ -34,7 +34,6 @@ const initialAuthState: AuthState = {
   error: null,
 };
 
-// ✅ sekarang bukan any lagi
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
@@ -116,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// ✅ useAuth lebih aman
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const ctx = React.useContext(AuthContext);
